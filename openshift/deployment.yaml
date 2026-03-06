@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claim-processing-app
+  labels:
+    app: claim-processing-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: claim-processing-app
+  template:
+    metadata:
+      labels:
+        app: claim-processing-app
+    spec:
+      containers:
+        - name: claim-processing-app
+          image: image-registry.openshift-image-registry.svc:5000/claims/claim-processing-app:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: claim-processing-app
+spec:
+  selector:
+    app: claim-processing-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: claim-processing-app
+spec:
+  to:
+    kind: Service
+    name: claim-processing-app
+  port:
+    targetPort: 80
