@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: claim-processing-app
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+server:
+  port: 8080
+
+claims:
+  batch:
+    cron: "0 */2 * * * *"
